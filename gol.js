@@ -78,6 +78,10 @@ function countNeighbors(x, y, world){
 	var right = x+1;
 	var midX = x;
 
+	var add = function(a, b) {
+		return a + b;
+	}
+
 	return [
 		world.get(left, top),
 		world.get(left, midY),
@@ -87,7 +91,7 @@ function countNeighbors(x, y, world){
 		world.get(right, top),
 		world.get(right, midY),
 		world.get(right, bottom),
-	].map(x => isAlive(x) ? 1 : 0).reduce((x, collector) => x + collector, 0);
+	].map(x => isAlive(x) ? 1 : 0).reduce(add, 0);
 }
 
 function survive(neighborCount) {
