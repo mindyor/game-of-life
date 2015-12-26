@@ -27,30 +27,42 @@ function drawNeighborCounts(x, y, count, canvas) {
 function isAlive(thing) { return thing; }
 
 function render(world, canvas) {
-	world.forEach(function(row, indexY) {
-		row.forEach(function(cell, indexX) {
-			drawCell(indexX, indexY, cell, canvas);
-		});
+	world.forEach(function(x, y, cell) {
+	  drawCell(x, y, cell, canvas);
 	});
 }
 
 function renderNeighborCounts(world, canvas) {
-	world.forEach(function(row, y) {
-		row.forEach(function(cell, x) {
-			drawNeighborCounts(x, y, countNeighbors(x, y, world), canvas);
-		});
+	world.forEach(function(x, y, cell) {
+		drawNeighborCounts(x, y, countNeighbors(x, y, world), canvas);
 	});
 }
 
-function createWorld() {
+function createWorld(width, height) {
 	var rows = [];
-	for(var i = 0; i < WORLD_HEIGHT; i++) {
+	for(var i = 0; i < height; i++) {
 		rows[i] = [];
-		for(var j=0; j < WORLD_WIDTH; j++) {
+		for(var j=0; j < width; j++) {
 			rows[i][j] = true;
 		}
 	}
-	return rows;
+	return {
+		width: width,
+		height: height,
+		get: function(x, y) {
+			return rows[y][x];
+		},
+		set: function(x, y, heartbeat) {
+			rows[y][x] = heartbeat;
+		},
+		forEach: function(fn) {
+			rows.forEach(function(row, y) {
+				row.forEach(function(cell, x) {
+					fn(x, y, cell);
+				});
+			});
+		}
+	};
 }
 
 function countNeighbors(x, y, world){
@@ -65,19 +77,14 @@ function countNeighbors(x, y, world){
 }
 
 function survive(neighborCount) {
-	// return neighborCount === 2;
 	return true;
 }
 
 function progress(oldWorld) {
-	var newWorld = createWorld();
-    oldWorld.forEach(function(row, y) {
-    	row.forEach(function(cell, x) {
-    		// newWorld[y][x] = oldWorld[y][x];
-    		newWorld[y][x] = oldWorld[y][x];
-
-    	});
-    });
+	var newWorld = createWorld(oldWorld.width, oldWorld.height);
+	oldWorld.forEach(function(x, y, cell) {
+		newWorld.set(x, y, !cell);
+	});
 	return newWorld;
 }
 
@@ -88,8 +95,8 @@ function init(){
 
 	var canvas = canvasTag.getContext("2d");
 
-	var world = createWorld();
-	world[1][5] = false;
+	var world = createWorld(WORLD_WIDTH, WORLD_HEIGHT);
+	world.set(5, 1, false);
 	world = progress(world);
 	render(world, canvas);
 	renderNeighborCounts(world, canvas);
