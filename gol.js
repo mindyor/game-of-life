@@ -1,6 +1,8 @@
 var CELL_SIZE = 50;
 var WORLD_WIDTH = 11;
 var WORLD_HEIGHT = 10;
+var DEAD = false;
+var LIVE = true;
 
 function drawCell(x, y, cell, canvas) {
 	var left = x * CELL_SIZE;
@@ -24,7 +26,7 @@ function drawNeighborCounts(x, y, count, canvas) {
 }
 
 
-function isAlive(thing) { return thing; }
+function isAlive(thing) { return thing === LIVE; }
 
 function render(world, canvas) {
 	world.forEach(function(x, y, cell) {
@@ -43,13 +45,16 @@ function createWorld(width, height) {
 	for(var i = 0; i < height; i++) {
 		rows[i] = [];
 		for(var j=0; j < width; j++) {
-			rows[i][j] = true;
+			rows[i][j] = LIVE;
 		}
 	}
 	return {
 		width: width,
 		height: height,
 		get: function(x, y) {
+			if(rows[y] === undefined || rows[y][x] === undefined) {
+				return DEAD;
+			}
 			return rows[y][x];
 		},
 		set: function(x, y, heartbeat) {
@@ -73,17 +78,26 @@ function countNeighbors(x, y, world){
 	var right = x+1;
 	var midX = x;
 
-	return 2;
+	return [
+		world.get(left, top),
+		world.get(left, midY),
+		world.get(left, bottom),
+		world.get(midX, top),
+		world.get(midX, bottom),
+		world.get(right, top),
+		world.get(right, midY),
+		world.get(right, bottom),
+	].map(x => isAlive(x) ? 1 : 0).reduce((x, collector) => x + collector, 0);
 }
 
 function survive(neighborCount) {
-	return true;
+	return LIVE;
 }
 
 function progress(oldWorld) {
 	var newWorld = createWorld(oldWorld.width, oldWorld.height);
 	oldWorld.forEach(function(x, y, cell) {
-		newWorld.set(x, y, !cell);
+		newWorld.set(x, y, cell);
 	});
 	return newWorld;
 }
@@ -96,7 +110,7 @@ function init(){
 	var canvas = canvasTag.getContext("2d");
 
 	var world = createWorld(WORLD_WIDTH, WORLD_HEIGHT);
-	world.set(5, 1, false);
+	world.set(5, 1, DEAD);
 	world = progress(world);
 	render(world, canvas);
 	renderNeighborCounts(world, canvas);
