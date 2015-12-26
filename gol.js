@@ -3,6 +3,7 @@ var WORLD_WIDTH = 11;
 var WORLD_HEIGHT = 10;
 var DEAD = false;
 var LIVE = true;
+var keepGoing;
 
 function drawCell(x, y, cell, canvas) {
 	var left = x * CELL_SIZE;
@@ -112,6 +113,16 @@ function progress(oldWorld) {
 	return newWorld;
 }
 
+function stop() {
+	clearInterval(keepGoing);
+}
+
+function start() {
+	keepGoing = setInterval(step, 1000);
+}
+
+var step;
+
 function init(){
 	var canvasTag = document.getElementById("world");
 	canvasTag.height = CELL_SIZE * WORLD_HEIGHT;
@@ -126,11 +137,13 @@ function init(){
 	world.set(6, 4, LIVE);
 	world.set(7, 1, LIVE);
 	world.set(7, 3, LIVE);
-	setInterval(function() {
-		render(world, canvas);
+	render(world, canvas);
+	renderNeighborCounts(world, canvas);
+	step = function () {
 		world = progress(world);
+		render(world, canvas);
 		renderNeighborCounts(world, canvas);
-	}, 1000);
+	}
 }
 
 window.onload = init;
