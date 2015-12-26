@@ -45,7 +45,7 @@ function createWorld(width, height) {
 	for(var i = 0; i < height; i++) {
 		rows[i] = [];
 		for(var j=0; j < width; j++) {
-			rows[i][j] = LIVE;
+			rows[i][j] = DEAD;
 		}
 	}
 	return {
@@ -95,13 +95,19 @@ function countNeighbors(x, y, world){
 }
 
 function survive(neighborCount) {
-	return LIVE;
+	return neighborCount === 2 || neighborCount === 3;
+}
+
+function revive(neighborCount) {
+	return neighborCount === 3;
 }
 
 function progress(oldWorld) {
 	var newWorld = createWorld(oldWorld.width, oldWorld.height);
 	oldWorld.forEach(function(x, y, cell) {
-		newWorld.set(x, y, cell);
+		var neighborCount = countNeighbors(x, y, oldWorld);
+		var newStatus = cell ? survive(neighborCount) : revive(neighborCount);
+		newWorld.set(x, y, newStatus);
 	});
 	return newWorld;
 }
@@ -114,10 +120,17 @@ function init(){
 	var canvas = canvasTag.getContext("2d");
 
 	var world = createWorld(WORLD_WIDTH, WORLD_HEIGHT);
-	world.set(5, 1, DEAD);
-	world = progress(world);
-	render(world, canvas);
-	renderNeighborCounts(world, canvas);
+	world.set(5, 1, LIVE);
+	world.set(6, 1, LIVE);
+	world.set(6, 2, LIVE);
+	world.set(6, 4, LIVE);
+	world.set(7, 1, LIVE);
+	world.set(7, 3, LIVE);
+	setInterval(function() {
+		render(world, canvas);
+		world = progress(world);
+		renderNeighborCounts(world, canvas);
+	}, 1000);
 }
 
 window.onload = init;
