@@ -53,7 +53,8 @@ function createWorld(width, height) {
 		width: width,
 		height: height,
 		get: function(x, y) {
-			if(rows[y] === undefined || rows[y][x] === undefined) {
+			var isOutsideOfWorld = rows[y] === undefined || rows[y][x] === undefined;
+			if(isOutsideOfWorld) {
 				return DEAD;
 			}
 			return rows[y][x];
